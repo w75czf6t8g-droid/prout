@@ -211,8 +211,8 @@ function mettreAJour(delta) {
 }
 
 function dessiner() {
-    // Ciel
-    ctx.fillStyle = "#87CEEB";
+// Fond avec la couleur choisie
+    ctx.fillStyle = couleurFondActuelle();
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Sol
