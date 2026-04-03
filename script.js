@@ -196,10 +196,8 @@ function mettreAJour(delta) {
                 ennemi.visible = false;
                 joueur.velociteY = -10;
             } else {
-                viesRestantes--;
+               viesRestantes--;
                 joueur.invincible = true;
-                joueur.x = 100;
-                joueur.y = 300;
                 setTimeout(() => joueur.invincible = false, 2000);
 
                  if (viesRestantes <= 0) {
