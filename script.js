@@ -1,5 +1,7 @@
 let jeuLance = false;
 let gameOver = false;
+let delaiProchainRemplacement = 0;
+let tempsDepuisDernierRemplacement = 0;
 const canvas = document.getElementById("jeu");
 const ctx = canvas.getContext("2d");
 
@@ -120,7 +122,10 @@ function mettreAJour(delta) {
     }
 
 // Mise à jour des plateformes
-    const DUREE_FONDU = 1000; // 1 seconde pour apparaître/disparaître
+const DUREE_FONDU = 1000;
+
+    // Compteur global entre remplacements
+    tempsDepuisDernierRemplacement += delta;
 
     plateformes.forEach((p, i) => {
         // Apparition progressive
@@ -130,13 +135,39 @@ function mettreAJour(delta) {
                 p.opacite = 1;
                 p.apparition = false;
             }
-        } else {
-            // Décompte uniquement quand totalement apparue
-            p.tempsRestant -= delta;
+        }
+
+        // Disparition progressive
+        if (p.tempsRestant <= 0) {
+            p.opacite -= delta / DUREE_FONDU;
+            if (p.opacite <= 0) {
+                const autresPlateformes = plateformes.filter((_, j) => j !== i);
+                plateformes[i] = nouvellePlateforme(autresPlateformes);
+                tempsDepuisDernierRemplacement = 0;
+                delaiProchainRemplacement = Math.random() * 5000 + 10000;
+            }
+            return;
+        }
+
+        // Déclencher la disparition d'une plateforme aléatoire
+        if (
+            tempsDepuisDernierRemplacement >= delaiProchainRemplacement &&
+            delaiProchainRemplacement > 0 &&
+            !plateformes.some(p => p.tempsRestant <= 0)
+        ) {
+            // Choisir une plateforme aléatoire qui n'est pas en train de disparaître
+            const disponibles = plateformes
+                .map((p, i) => ({ p, i }))
+                .filter(({ p }) => !p.apparition && p.tempsRestant > 0);
+
+            if (disponibles.length > 0) {
+                const choix = disponibles[Math.floor(Math.random() * disponibles.length)];
+                plateformes[choix.i].tempsRestant = 0;
+            }
         }
 
         // Variation de couleur sur les 5 dernières secondes
-        if (!p.apparition && p.tempsRestant < 5000) {
+        if (!p.apparition && p.tempsRestant < 5000 && p.tempsRestant > 0) {
             const progression = 1 - (p.tempsRestant / 5000);
             if (progression < 0.5) {
                 const t = progression / 0.5;
@@ -155,24 +186,13 @@ function mettreAJour(delta) {
             p.couleur = "#8B4513";
         }
 
-        // Disparition progressive puis remplacement
-        if (p.tempsRestant <= 0) {
-            p.opacite -= delta / DUREE_FONDU;
-            if (p.opacite <= 0) {
-                // Remplacer sans chevaucher les autres
-                const autresPlateformes = plateformes.filter((_, j) => j !== i);
-                plateformes[i] = nouvellePlateforme(autresPlateformes);
-            }
-        }
-
-        // Collision uniquement si bien visible
+        // Collision
         if (p.opacite > 0.5 && collisionPlateforme(p)) {
             joueur.y = p.y - joueur.hauteur;
             joueur.velociteY = 0;
             joueur.auSol = true;
         }
     });
-
     // Déplacement joueur
     if (touches["ArrowLeft"]) joueur.x -= joueur.vitesse;
     if (touches["ArrowRight"]) joueur.x += joueur.vitesse;
@@ -358,6 +378,8 @@ function lancerJeu() {
     joueur.x = 100;
     joueur.y = 300;
     joueur.couleur = couleurs[indexCouleur].valeur;
+    delaiProchainRemplacement = Math.random() * 5000 + 10000; // ← ajoute
+    tempsDepuisDernierRemplacement = 0; // ← ajoute
     requestAnimationFrame(boucleJeu);
 }
 
