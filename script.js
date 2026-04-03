@@ -373,15 +373,29 @@ canvas.addEventListener("click", (e) => {
 
 function lancerJeu() {
     if (animationId) cancelAnimationFrame(animationId);
-    jeuLance = false;
-    jeuLance = true;
+    animationId = null;
     score = 0;
     viesRestantes = 3;
+    gameOver = false;
     joueur.x = 100;
     joueur.y = 300;
+    joueur.velociteY = 0;
+    joueur.invincible = false;
     joueur.couleur = couleurs[indexCouleur].valeur;
-    delaiProchainRemplacement = Math.random() * 5000 + 10000; // ← ajoute
-    tempsDepuisDernierRemplacement = 0; // ← ajoute
-    requestAnimationFrame(boucleJeu);
+    ennemis.forEach(e => { e.visible = true; });
+    ennemis[0].x = 200;
+    ennemis[1].x = 400;
+    ennemis[2].x = 560;
+    plateformes = [];
+    for (let i = 0; i < 4; i++) {
+        const p = nouvellePlateforme(plateformes);
+        p.opacite = 1;
+        p.apparition = false;
+        plateformes.push(p);
+    }
+    delaiProchainRemplacement = Math.random() * 5000 + 10000;
+    tempsDepuisDernierRemplacement = 0;
+    dernierTemps = performance.now();
+    animationId = requestAnimationFrame(boucleJeu);
 }
 
