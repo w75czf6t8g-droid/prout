@@ -37,7 +37,7 @@ function nouvellePlateforme() {
         x, y, largeur,
         hauteur: 15,
         couleur: "#8B4513",
-        vie: Math.random() * 3000 + 2000, // Durée entre 2 et 5 secondes
+        vie: Math.random() * 5000 + 8000, // Entre 8 et 13 secondes
         tempsRestant: 0,
         encassage: false,
         opacite: 1
@@ -106,11 +106,27 @@ function mettreAJour(delta) {
     plateformes.forEach((p, i) => {
         p.tempsRestant -= delta;
 
-        // Phase de casse (clignottement)
-        if (p.tempsRestant < 1000) {
-            p.opacite = 0.3 + 0.7 * (p.tempsRestant / 1000);
-            p.couleur = "#FF6600"; // Devient orange avant de casser
+        // Variation de couleur sur les 5 dernières secondes
+    if (p.tempsRestant < 5000) {
+        const progression = 1 - (p.tempsRestant / 5000);
+        if (progression < 0.5) {
+            // Marron → Orange
+            const t = progression / 0.5;
+            const r = Math.round(139 + (255 - 139) * t);
+            const g = Math.round(69 + (102 - 69) * t);
+            const b = Math.round(19 + (0 - 19) * t);
+            p.couleur = `rgb(${r},${g},${b})`;
+        } else {
+            // Orange → Rouge
+            const t = (progression - 0.5) / 0.5;
+            const r = 255;
+            const g = Math.round(102 * (1 - t));
+            const b = 0;
+            p.couleur = `rgb(${r},${g},${b})`;
         }
+    } else {
+        p.couleur = "#8B4513"; // Marron normal
+    }
 
         // Remplacer la plateforme cassée
         if (p.tempsRestant <= 0) {
@@ -183,23 +199,9 @@ function dessiner() {
     ctx.fillRect(sol.x, sol.y, sol.largeur, sol.hauteur);
 
     // Plateformes avec opacité
-    plateformes.forEach(p => {
-        ctx.globalAlpha = p.opacite;
+plateformes.forEach(p => {
         ctx.fillStyle = p.couleur;
         ctx.fillRect(p.x, p.y, p.largeur, p.hauteur);
-
-        // Fissures si plateforme presque cassée
-        if (p.tempsRestant < 1000) {
-            ctx.strokeStyle = "#000";
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(p.x + p.largeur * 0.3, p.y);
-            ctx.lineTo(p.x + p.largeur * 0.5, p.y + p.hauteur);
-            ctx.moveTo(p.x + p.largeur * 0.6, p.y);
-            ctx.lineTo(p.x + p.largeur * 0.8, p.y + p.hauteur);
-            ctx.stroke();
-        }
-        ctx.globalAlpha = 1;
     });
 
     // Ennemis
