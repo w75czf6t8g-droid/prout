@@ -4,21 +4,236 @@
     <meta charset="UTF-8">
     <title>Mon Jeu Plateforme</title>
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            margin: 0;
-            background-color: #87CEEB;
+            background-color: #1a1a2e;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
+            font-family: Arial, sans-serif;
         }
+
         canvas {
-            border: 2px solid #000;
+            display: block;
+        }
+
+        /* PAGES */
+        .page {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 800px;
+            height: 400px;
+            background-color: #1a1a2e;
+            position: relative;
+        }
+
+        .page.active {
+            display: flex;
+        }
+
+        /* MENU */
+        #menu {
+            gap: 20px;
+        }
+
+        #menu h1 {
+            color: white;
+            font-size: 36px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #FF0000;
+        }
+
+        #apercu-joueur {
+            width: 60px;
+            height: 60px;
+            background-color: #FF0000;
+            border: 3px solid white;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+
+        .btn {
+            padding: 12px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.1s;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+
+        #btn-jouer {
+            background-color: #FF0000;
+            color: white;
+            margin-top: 10px;
+        }
+
+        #btn-couleurs {
+            position: absolute;
+            left: 20px;
+            bottom: 20px;
+            background-color: #444;
+            color: white;
+            padding: 10px 20px;
+            font-size: 15px;
+        }
+
+        /* PAGE COULEURS */
+        #page-couleurs {
+            gap: 30px;
+        }
+
+        #page-couleurs h2 {
+            color: white;
+            font-size: 28px;
+        }
+
+        .couleur-selector {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .apercu-grand {
+            width: 80px;
+            height: 80px;
+            border: 3px solid white;
+            border-radius: 8px;
+        }
+
+        .fleche {
+            background: none;
+            border: 2px solid white;
+            color: white;
+            font-size: 24px;
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .fleche:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+
+        .nom-couleur {
+            color: white;
+            font-size: 18px;
+            width: 100px;
+            text-align: center;
+        }
+
+        #btn-retour {
+            background-color: #444;
+            color: white;
+            margin-top: 10px;
+        }
+
+        /* JEU */
+        #page-jeu {
+            padding: 0;
+        }
+
+        #page-jeu canvas {
+            width: 800px;
+            height: 400px;
         }
     </style>
 </head>
 <body>
-    <canvas id="jeu" width="800" height="400"></canvas>
+
+    <!-- MENU -->
+    <div class="page active" id="menu">
+        <h1>🎮 Mon Jeu</h1>
+        <div id="apercu-joueur"></div>
+        <button class="btn" id="btn-jouer">▶ Jouer</button>
+        <button class="btn" id="btn-couleurs">🎨 Couleurs</button>
+    </div>
+
+    <!-- PAGE COULEURS -->
+    <div class="page" id="page-couleurs">
+        <h2>🎨 Choisir une couleur</h2>
+        <div class="couleur-selector">
+            <button class="fleche" id="fleche-gauche">◀</button>
+            <div class="apercu-grand" id="apercu-couleur"></div>
+            <button class="fleche" id="fleche-droite">▶</button>
+        </div>
+        <div class="nom-couleur" id="nom-couleur">Rouge</div>
+        <button class="btn" id="btn-retour">↩ Retour</button>
+    </div>
+
+    <!-- JEU -->
+    <div class="page" id="page-jeu">
+        <canvas id="jeu" width="800" height="400"></canvas>
+    </div>
+
+    <script>
+        // ---- COULEURS DISPONIBLES ----
+        const couleurs = [
+            { nom: "Rouge",    valeur: "#FF0000" },
+            { nom: "Bleu",     valeur: "#1E90FF" },
+            { nom: "Vert",     valeur: "#00CC44" },
+            { nom: "Jaune",    valeur: "#FFD700" },
+            { nom: "Orange",   valeur: "#FF8C00" },
+            { nom: "Rose",     valeur: "#FF69B4" },
+            { nom: "Violet",   valeur: "#9400D3" },
+            { nom: "Blanc",    valeur: "#FFFFFF" },
+            { nom: "Cyan",     valeur: "#00CED1" },
+        ];
+
+        let indexCouleur = 0;
+
+        function appliquerCouleur() {
+            const c = couleurs[indexCouleur];
+            document.getElementById("apercu-couleur").style.backgroundColor = c.valeur;
+            document.getElementById("apercu-joueur").style.backgroundColor = c.valeur;
+            document.getElementById("nom-couleur").textContent = c.nom;
+            if (typeof joueur !== "undefined") joueur.couleur = c.valeur;
+        }
+
+        document.getElementById("fleche-gauche").onclick = () => {
+            indexCouleur = (indexCouleur - 1 + couleurs.length) % couleurs.length;
+            appliquerCouleur();
+        };
+
+        document.getElementById("fleche-droite").onclick = () => {
+            indexCouleur = (indexCouleur + 1) % couleurs.length;
+            appliquerCouleur();
+        };
+
+        // ---- NAVIGATION ----
+        function afficherPage(id) {
+            document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+            document.getElementById(id).classList.add("active");
+        }
+
+        document.getElementById("btn-jouer").onclick = () => {
+            afficherPage("page-jeu");
+            lancerJeu();
+        };
+
+        document.getElementById("btn-couleurs").onclick = () => {
+            afficherPage("page-couleurs");
+            appliquerCouleur();
+        };
+
+        document.getElementById("btn-retour").onclick = () => {
+            afficherPage("menu");
+        };
+
+        appliquerCouleur();
+    </script>
+
     <script src="script.js"></script>
 </body>
 </html>
