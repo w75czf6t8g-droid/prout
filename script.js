@@ -30,29 +30,44 @@ const sol = {
 };
 
 // Générer une plateforme aléatoire
-function nouvellePlateforme() {
-    const largeur = Math.random() * 80 + 60; // Entre 60 et 140
-    const x = Math.random() * (canvas.width - largeur - 20) + 10;
-    const y = Math.random() * 200 + 100; // Entre 100 et 300
-    return {
-        x, y, largeur,
-        hauteur: 15,
-        couleur: "#8B4513",
-        vie: Math.random() * 5000 + 8000, // Entre 8 et 13 secondes
-        tempsRestant: 0,
-        encassage: false,
-        opacite: 1
-    };
+function nouvellePlateforme(exclure = []) {
+    let tentatives = 0;
+    let p;
+    do {
+        const largeur = Math.random() * 80 + 60;
+        const x = Math.random() * (canvas.width - largeur - 20) + 10;
+        const y = Math.random() * 200 + 100;
+        p = {
+            x, y, largeur,
+            hauteur: 15,
+            couleur: "#8B4513",
+            vie: Math.random() * 5000 + 8000,
+            tempsRestant: 0,
+            opacite: 0, // Commence invisible pour apparition progressive
+            apparition: true // En train d'apparaître
+        };
+        tentatives++;
+        // Vérifie qu'elle ne chevauche pas les autres
+        const chevauche = exclure.some(autre =>
+            p.x < autre.x + autre.largeur + 20 &&
+            p.x + p.largeur + 20 > autre.x &&
+            p.y < autre.y + autre.hauteur + 20 &&
+            p.y + p.hauteur + 20 > autre.y
+        );
+        if (!chevauche) break;
+    } while (tentatives < 50);
+
+    p.tempsRestant = p.vie;
+    return p;
 }
 
 // Plateformes initiales
-let plateformes = [
-    nouvellePlateforme(),
-    nouvellePlateforme(),
-    nouvellePlateforme(),
-    nouvellePlateforme(),
-];
-plateformes.forEach(p => p.tempsRestant = p.vie);
+let plateformes = [];
+for (let i = 0; i < 4; i++) {
+    const p = nouvellePlateforme(plateformes);
+    p.opacite = 1; // Plateformes initiales déjà visibles
+    plateformes.push(p);
+}
 
 // Les ennemis
 const ennemis = [
@@ -104,40 +119,54 @@ function mettreAJour(delta) {
         joueur.auSol = true;
     }
 
-    // Mise à jour des plateformes
+// Mise à jour des plateformes
+    const DUREE_FONDU = 1000; // 1 seconde pour apparaître/disparaître
+
     plateformes.forEach((p, i) => {
-        p.tempsRestant -= delta;
+        // Apparition progressive
+        if (p.apparition) {
+            p.opacite += delta / DUREE_FONDU;
+            if (p.opacite >= 1) {
+                p.opacite = 1;
+                p.apparition = false;
+            }
+        } else {
+            // Décompte uniquement quand totalement apparue
+            p.tempsRestant -= delta;
+        }
 
         // Variation de couleur sur les 5 dernières secondes
-    if (p.tempsRestant < 5000) {
-        const progression = 1 - (p.tempsRestant / 5000);
-        if (progression < 0.5) {
-            // Marron → Orange
-            const t = progression / 0.5;
-            const r = Math.round(139 + (255 - 139) * t);
-            const g = Math.round(69 + (102 - 69) * t);
-            const b = Math.round(19 + (0 - 19) * t);
-            p.couleur = `rgb(${r},${g},${b})`;
-        } else {
-            // Orange → Rouge
-            const t = (progression - 0.5) / 0.5;
-            const r = 255;
-            const g = Math.round(102 * (1 - t));
-            const b = 0;
-            p.couleur = `rgb(${r},${g},${b})`;
+        if (!p.apparition && p.tempsRestant < 5000) {
+            const progression = 1 - (p.tempsRestant / 5000);
+            if (progression < 0.5) {
+                const t = progression / 0.5;
+                const r = Math.round(139 + (255 - 139) * t);
+                const g = Math.round(69 + (102 - 69) * t);
+                const b = Math.round(19 + (0 - 19) * t);
+                p.couleur = `rgb(${r},${g},${b})`;
+            } else {
+                const t = (progression - 0.5) / 0.5;
+                const r = 255;
+                const g = Math.round(102 * (1 - t));
+                const b = 0;
+                p.couleur = `rgb(${r},${g},${b})`;
+            }
+        } else if (!p.apparition) {
+            p.couleur = "#8B4513";
         }
-    } else {
-        p.couleur = "#8B4513"; // Marron normal
-    }
 
-        // Remplacer la plateforme cassée
+        // Disparition progressive puis remplacement
         if (p.tempsRestant <= 0) {
-            plateformes[i] = nouvellePlateforme();
-            plateformes[i].tempsRestant = plateformes[i].vie;
+            p.opacite -= delta / DUREE_FONDU;
+            if (p.opacite <= 0) {
+                // Remplacer sans chevaucher les autres
+                const autresPlateformes = plateformes.filter((_, j) => j !== i);
+                plateformes[i] = nouvellePlateforme(autresPlateformes);
+            }
         }
 
-        // Collision avec joueur
-        if (collisionPlateforme(p)) {
+        // Collision uniquement si bien visible
+        if (p.opacite > 0.5 && collisionPlateforme(p)) {
             joueur.y = p.y - joueur.hauteur;
             joueur.velociteY = 0;
             joueur.auSol = true;
@@ -194,8 +223,10 @@ function dessiner() {
 
     // Plateformes avec opacité
 plateformes.forEach(p => {
+        ctx.globalAlpha = p.opacite;
         ctx.fillStyle = p.couleur;
         ctx.fillRect(p.x, p.y, p.largeur, p.hauteur);
+        ctx.globalAlpha = 1;
     });
 
     // Ennemis
@@ -290,13 +321,12 @@ canvas.addEventListener("click", (e) => {
         ennemis[0].x = 200;
         ennemis[1].x = 400;
         ennemis[2].x = 560;
-        plateformes = [
-            nouvellePlateforme(),
-            nouvellePlateforme(),
-            nouvellePlateforme(),
-            nouvellePlateforme(),
-        ];
-        plateformes.forEach(p => p.tempsRestant = p.vie);
+       plateformes = [];
+        for (let i = 0; i < 4; i++) {
+            const p = nouvellePlateforme(plateformes);
+            p.opacite = 1;
+            plateformes.push(p);
+        }
     }
 
     // Clic sur Menu
@@ -312,13 +342,12 @@ canvas.addEventListener("click", (e) => {
         ennemis[0].x = 200;
         ennemis[1].x = 400;
         ennemis[2].x = 560;
-        plateformes = [
-            nouvellePlateforme(),
-            nouvellePlateforme(),
-            nouvellePlateforme(),
-            nouvellePlateforme(),
-        ];
-        plateformes.forEach(p => p.tempsRestant = p.vie);
+       plateformes = [];
+        for (let i = 0; i < 4; i++) {
+            const p = nouvellePlateforme(plateformes);
+            p.opacite = 1;
+            plateformes.push(p);
+        }
         afficherPage("menu");
     }
 });
