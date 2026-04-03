@@ -4,149 +4,229 @@
     <meta charset="UTF-8">
     <title>Mon Jeu Plateforme</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            background-color: #1a1a2e;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            font-family: Arial, sans-serif;
+            background: #1a1a2e;
+            font-family: 'Press Start 2P', monospace;
         }
 
-        canvas {
-            display: block;
-        }
-
-        /* PAGES */
         .page {
             display: none;
+            width: 800px;
+            height: 400px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page.active { display: flex; }
+
+        /* ─── MENU ─── */
+        #menu {
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            width: 800px;
-            height: 400px;
-            background-color: #1a1a2e;
-            position: relative;
+            gap: 30px;
+            transition: background-color 0.5s;
         }
 
-        .page.active {
-            display: flex;
+        #menu-bg {
+            position: absolute;
+            inset: 0;
+            background: #1a1a2e;
+            transition: background 0.5s;
+            z-index: 0;
         }
 
-        /* MENU */
-        #menu {
-            gap: 20px;
+        /* Lignes décoratives style GD */
+        #menu-bg::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                repeating-linear-gradient(
+                    90deg,
+                    rgba(255,255,255,0.03) 0px,
+                    rgba(255,255,255,0.03) 1px,
+                    transparent 1px,
+                    transparent 60px
+                ),
+                repeating-linear-gradient(
+                    0deg,
+                    rgba(255,255,255,0.03) 0px,
+                    rgba(255,255,255,0.03) 1px,
+                    transparent 1px,
+                    transparent 60px
+                );
         }
 
         #menu h1 {
-            color: white;
-            font-size: 36px;
-            margin-bottom: 10px;
-            text-shadow: 0 0 10px #FF0000;
+            position: relative;
+            z-index: 1;
+            font-size: 32px;
+            color: #aaff00;
+            text-shadow:
+                3px 3px 0 #3a7000,
+                0 0 20px #aaff00,
+                0 0 40px #aaff0088;
+            letter-spacing: 4px;
         }
 
-        #apercu-joueur {
-            width: 60px;
-            height: 60px;
-            background-color: #FF0000;
-            border: 3px solid white;
-            border-radius: 6px;
-            margin: 10px 0;
-        }
-
-        .btn {
-            padding: 12px 40px;
-            font-size: 18px;
-            font-weight: bold;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: transform 0.1s, opacity 0.1s;
-        }
-
-        .btn:hover {
-            transform: scale(1.05);
-            opacity: 0.9;
-        }
-
-        #btn-jouer {
-            background-color: #FF0000;
-            color: white;
-            margin-top: 10px;
-        }
-
-        #btn-couleurs {
-            position: absolute;
-            left: 20px;
-            bottom: 20px;
-            background-color: #444;
-            color: white;
-            padding: 10px 20px;
-            font-size: 15px;
-        }
-
-        /* PAGE COULEURS */
-        #page-couleurs {
+        /* Trois boutons style GD */
+        .menu-btns {
+            position: relative;
+            z-index: 1;
+            display: flex;
             gap: 30px;
+            align-items: center;
         }
 
-        #page-couleurs h2 {
+        .gd-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+
+        .gd-btn:hover { transform: scale(1.12); }
+        .gd-btn:active { transform: scale(0.95); }
+
+        .gd-btn .icone {
+            width: 80px;
+            height: 80px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            border: 4px solid rgba(255,255,255,0.3);
+            box-shadow: 0 6px 0 rgba(0,0,0,0.4), 0 0 20px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        /* Reflet */
+        .gd-btn .icone::after {
+            content: '';
+            position: absolute;
+            top: 6px;
+            left: 8px;
+            right: 8px;
+            height: 30%;
+            background: rgba(255,255,255,0.2);
+            border-radius: 8px;
+        }
+
+        /* Bouton couleur joueur — jaune/or */
+        #btn-couleurs .icone {
+            background: linear-gradient(145deg, #f5c842, #c89a00);
+        }
+
+        /* Bouton jouer — vert */
+        #btn-jouer .icone {
+            width: 100px;
+            height: 100px;
+            font-size: 42px;
+            background: linear-gradient(145deg, #5dde2a, #2d8000);
+        }
+
+        /* Bouton couleur fond — violet/bleu */
+        #btn-fond .icone {
+            background: linear-gradient(145deg, #5b8fff, #1a3ab8);
+        }
+
+        .gd-btn .label {
             color: white;
-            font-size: 28px;
+            font-size: 8px;
+            text-shadow: 1px 1px 0 black;
+        }
+
+        /* Aperçu joueur dans le bouton couleur */
+        #apercu-joueur-mini {
+            width: 28px;
+            height: 28px;
+            border-radius: 5px;
+            border: 2px solid white;
+            background: #FF0000;
+        }
+
+        /* ─── PAGE COULEURS ─── */
+        #page-couleurs, #page-fond {
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 25px;
+            background: #111;
+        }
+
+        #page-couleurs h2, #page-fond h2 {
+            color: #aaff00;
+            font-size: 16px;
+            text-shadow: 2px 2px 0 #3a7000;
         }
 
         .couleur-selector {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 25px;
         }
 
         .apercu-grand {
-            width: 80px;
-            height: 80px;
-            border: 3px solid white;
-            border-radius: 8px;
+            width: 90px;
+            height: 90px;
+            border: 4px solid white;
+            border-radius: 14px;
+            box-shadow: 0 0 20px rgba(255,255,255,0.2);
+            transition: background-color 0.3s;
         }
 
         .fleche {
-            background: none;
-            border: 2px solid white;
+            background: linear-gradient(145deg, #444, #222);
+            border: 3px solid #666;
             color: white;
-            font-size: 24px;
-            width: 45px;
-            height: 45px;
-            border-radius: 8px;
+            font-size: 22px;
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: transform 0.1s, background 0.2s;
+            font-family: monospace;
         }
 
-        .fleche:hover {
-            background-color: rgba(255,255,255,0.2);
-        }
+        .fleche:hover { background: linear-gradient(145deg, #666, #333); transform: scale(1.1); }
+        .fleche:active { transform: scale(0.95); }
 
         .nom-couleur {
             color: white;
-            font-size: 18px;
-            width: 100px;
+            font-size: 12px;
+            width: 110px;
             text-align: center;
         }
 
-        #btn-retour {
-            background-color: #444;
+        .btn-retour {
+            background: linear-gradient(145deg, #555, #333);
             color: white;
-            margin-top: 10px;
+            border: 3px solid #777;
+            border-radius: 10px;
+            padding: 10px 30px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 11px;
+            cursor: pointer;
+            transition: transform 0.1s;
         }
 
-        /* JEU */
+        .btn-retour:hover { transform: scale(1.05); }
+
+        /* ─── JEU ─── */
         #page-jeu {
             padding: 0;
-        }
-
-        #page-jeu canvas {
-            width: 800px;
-            height: 400px;
         }
     </style>
 </head>
@@ -154,22 +234,55 @@
 
     <!-- MENU -->
     <div class="page active" id="menu">
-        <h1>🎮 Mon Jeu</h1>
-        <div id="apercu-joueur"></div>
-        <button class="btn" id="btn-jouer">▶ Jouer</button>
-        <button class="btn" id="btn-couleurs">🎨 Couleurs</button>
+        <div id="menu-bg"></div>
+        <h1>MON JEU</h1>
+        <div class="menu-btns">
+
+            <!-- Couleur joueur -->
+            <div class="gd-btn" id="btn-couleurs">
+                <div class="icone">
+                    <div id="apercu-joueur-mini"></div>
+                </div>
+                <span class="label">COULEUR</span>
+            </div>
+
+            <!-- Jouer -->
+            <div class="gd-btn" id="btn-jouer">
+                <div class="icone">▶</div>
+                <span class="label">JOUER</span>
+            </div>
+
+            <!-- Couleur fond -->
+            <div class="gd-btn" id="btn-fond">
+                <div class="icone">🎨</div>
+                <span class="label">FOND</span>
+            </div>
+
+        </div>
     </div>
 
-    <!-- PAGE COULEURS -->
+    <!-- PAGE COULEUR JOUEUR -->
     <div class="page" id="page-couleurs">
-        <h2>🎨 Choisir une couleur</h2>
+        <h2>🟥 COULEUR DU JOUEUR</h2>
         <div class="couleur-selector">
             <button class="fleche" id="fleche-gauche">◀</button>
             <div class="apercu-grand" id="apercu-couleur"></div>
             <button class="fleche" id="fleche-droite">▶</button>
         </div>
         <div class="nom-couleur" id="nom-couleur">Rouge</div>
-        <button class="btn" id="btn-retour">↩ Retour</button>
+        <button class="btn-retour" id="btn-retour-couleur">↩ RETOUR</button>
+    </div>
+
+    <!-- PAGE COULEUR FOND -->
+    <div class="page" id="page-fond">
+        <h2>🌌 COULEUR DU FOND</h2>
+        <div class="couleur-selector">
+            <button class="fleche" id="fleche-fond-gauche">◀</button>
+            <div class="apercu-grand" id="apercu-fond"></div>
+            <button class="fleche" id="fleche-fond-droite">▶</button>
+        </div>
+        <div class="nom-couleur" id="nom-fond">Nuit</div>
+        <button class="btn-retour" id="btn-retour-fond">↩ RETOUR</button>
     </div>
 
     <!-- JEU -->
@@ -178,40 +291,73 @@
     </div>
 
     <script>
-        // ---- COULEURS DISPONIBLES ----
+        // ── Couleurs joueur ──
         const couleurs = [
-            { nom: "Rouge",    valeur: "#FF0000" },
-            { nom: "Bleu",     valeur: "#1E90FF" },
-            { nom: "Vert",     valeur: "#00CC44" },
-            { nom: "Jaune",    valeur: "#FFD700" },
-            { nom: "Orange",   valeur: "#FF8C00" },
-            { nom: "Rose",     valeur: "#FF69B4" },
-            { nom: "Violet",   valeur: "#9400D3" },
-            { nom: "Blanc",    valeur: "#FFFFFF" },
-            { nom: "Cyan",     valeur: "#00CED1" },
+            { nom: "Rouge",   valeur: "#FF0000" },
+            { nom: "Bleu",    valeur: "#1E90FF" },
+            { nom: "Vert",    valeur: "#00CC44" },
+            { nom: "Jaune",   valeur: "#FFD700" },
+            { nom: "Orange",  valeur: "#FF8C00" },
+            { nom: "Rose",    valeur: "#FF69B4" },
+            { nom: "Violet",  valeur: "#9400D3" },
+            { nom: "Blanc",   valeur: "#FFFFFF" },
+            { nom: "Cyan",    valeur: "#00CED1" },
         ];
-
         let indexCouleur = 0;
 
-        function appliquerCouleur() {
+        // ── Couleurs fond ──
+        const couleursFond = [
+            { nom: "Nuit",      valeur: "#1a1a2e" },
+            { nom: "Océan",     valeur: "#0a3d62" },
+            { nom: "Forêt",     valeur: "#1a3a1a" },
+            { nom: "Coucher",   valeur: "#3d1a00" },
+            { nom: "Cosmos",    valeur: "#1a003d" },
+            { nom: "Volcan",    valeur: "#3d0000" },
+            { nom: "Glace",     valeur: "#003d3d" },
+            { nom: "Désert",    valeur: "#3d3010" },
+        ];
+        let indexFond = 0;
+
+        function couleurFondActuelle() {
+            return couleursFond[indexFond].valeur;
+        }
+
+        function appliquerCouleurJoueur() {
             const c = couleurs[indexCouleur];
             document.getElementById("apercu-couleur").style.backgroundColor = c.valeur;
-            document.getElementById("apercu-joueur").style.backgroundColor = c.valeur;
+            document.getElementById("apercu-joueur-mini").style.backgroundColor = c.valeur;
             document.getElementById("nom-couleur").textContent = c.nom;
             if (typeof joueur !== "undefined") joueur.couleur = c.valeur;
         }
 
+        function appliquerCouleurFond() {
+            const f = couleursFond[indexFond];
+            document.getElementById("apercu-fond").style.backgroundColor = f.valeur;
+            document.getElementById("nom-fond").textContent = f.nom;
+            document.getElementById("menu-bg").style.background = f.valeur;
+        }
+
+        // Flèches joueur
         document.getElementById("fleche-gauche").onclick = () => {
             indexCouleur = (indexCouleur - 1 + couleurs.length) % couleurs.length;
-            appliquerCouleur();
+            appliquerCouleurJoueur();
         };
-
         document.getElementById("fleche-droite").onclick = () => {
             indexCouleur = (indexCouleur + 1) % couleurs.length;
-            appliquerCouleur();
+            appliquerCouleurJoueur();
         };
 
-        // ---- NAVIGATION ----
+        // Flèches fond
+        document.getElementById("fleche-fond-gauche").onclick = () => {
+            indexFond = (indexFond - 1 + couleursFond.length) % couleursFond.length;
+            appliquerCouleurFond();
+        };
+        document.getElementById("fleche-fond-droite").onclick = () => {
+            indexFond = (indexFond + 1) % couleursFond.length;
+            appliquerCouleurFond();
+        };
+
+        // ── Navigation ──
         function afficherPage(id) {
             document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
             document.getElementById(id).classList.add("active");
@@ -224,14 +370,20 @@
 
         document.getElementById("btn-couleurs").onclick = () => {
             afficherPage("page-couleurs");
-            appliquerCouleur();
+            appliquerCouleurJoueur();
         };
 
-        document.getElementById("btn-retour").onclick = () => {
-            afficherPage("menu");
+        document.getElementById("btn-fond").onclick = () => {
+            afficherPage("page-fond");
+            appliquerCouleurFond();
         };
 
-        appliquerCouleur();
+        document.getElementById("btn-retour-couleur").onclick = () => afficherPage("menu");
+        document.getElementById("btn-retour-fond").onclick = () => afficherPage("menu");
+
+        // Init
+        appliquerCouleurJoueur();
+        appliquerCouleurFond();
     </script>
 
     <script src="script.js"></script>
