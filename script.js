@@ -1,4 +1,5 @@
 let jeuLance = false;
+let gameOver = false;
 const canvas = document.getElementById("jeu");
 const ctx = canvas.getContext("2d");
 
@@ -90,6 +91,7 @@ function collisionPlateforme(p) {
 }
 
 function mettreAJour(delta) {
+    if (gameOver) return;
     // Gravité
     joueur.velociteY += 0.5;
     joueur.y += joueur.velociteY;
@@ -171,16 +173,8 @@ function mettreAJour(delta) {
                 joueur.y = 300;
                 setTimeout(() => joueur.invincible = false, 2000);
 
-                if (viesRestantes <= 0) {
-                    alert("Game Over ! Score final : " + score);
-                    score = 0;
-                    viesRestantes = 3;
-                    joueur.x = 100;
-                    joueur.y = 300;
-                    ennemis.forEach(e => e.visible = true);
-                    ennemis[0].x = 200;
-                    ennemis[1].x = 400;
-                    ennemis[2].x = 560;
+                 if (viesRestantes <= 0) {
+                    gameOver = true;
                 }
             }
         }
@@ -223,11 +217,48 @@ plateformes.forEach(p => {
         ctx.fillRect(joueur.x, joueur.y, joueur.largeur, joueur.hauteur);
     }
 
-    // HUD
+   // HUD
     ctx.fillStyle = "black";
     ctx.font = "bold 20px Arial";
     ctx.fillText("Score : " + score, 10, 30);
     ctx.fillText("Vies : " + "❤️".repeat(viesRestantes), 650, 30);
+
+    // Écran Game Over
+    if (gameOver) {
+        // Fond semi-transparent
+        ctx.fillStyle = "rgba(0, 0, 0, 0.65)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Texte GAME OVER
+        ctx.fillStyle = "#FF0000";
+        ctx.font = "bold 72px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2 - 60);
+
+        // Score final
+        ctx.fillStyle = "white";
+        ctx.font = "bold 24px Arial";
+        ctx.fillText("Score : " + score, canvas.width / 2, canvas.height / 2 - 10);
+
+        // Bouton Rejouer
+        ctx.fillStyle = "#FF0000";
+        ctx.beginPath();
+        ctx.roundRect(canvas.width / 2 - 160, canvas.height / 2 + 20, 140, 50, 10);
+        ctx.fill();
+        ctx.fillStyle = "white";
+        ctx.font = "bold 20px Arial";
+        ctx.fillText("🔄 Rejouer", canvas.width / 2 - 90, canvas.height / 2 + 52);
+
+        // Bouton Menu
+        ctx.fillStyle = "#444444";
+        ctx.beginPath();
+        ctx.roundRect(canvas.width / 2 + 20, canvas.height / 2 + 20, 140, 50, 10);
+        ctx.fill();
+        ctx.fillStyle = "white";
+        ctx.fillText("🏠 Menu", canvas.width / 2 + 90, canvas.height / 2 + 52);
+
+        ctx.textAlign = "left";
+    }
 }
 
 function boucleJeu(tempsActuel) {
@@ -237,6 +268,60 @@ function boucleJeu(tempsActuel) {
     dessiner();
     requestAnimationFrame(boucleJeu);
 }
+canvas.addEventListener("click", (e) => {
+    if (!gameOver) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+
+    // Clic sur Rejouer
+    if (mx >= cx - 160 && mx <= cx - 20 && my >= cy + 20 && my <= cy + 70) {
+        gameOver = false;
+        score = 0;
+        viesRestantes = 3;
+        joueur.x = 100;
+        joueur.y = 300;
+        joueur.velociteY = 0;
+        ennemis.forEach(e => { e.visible = true; });
+        ennemis[0].x = 200;
+        ennemis[1].x = 400;
+        ennemis[2].x = 560;
+        plateformes = [
+            nouvellePlateforme(),
+            nouvellePlateforme(),
+            nouvellePlateforme(),
+            nouvellePlateforme(),
+        ];
+        plateformes.forEach(p => p.tempsRestant = p.vie);
+    }
+
+    // Clic sur Menu
+    if (mx >= cx + 20 && mx <= cx + 160 && my >= cy + 20 && my <= cy + 70) {
+        gameOver = false;
+        score = 0;
+        viesRestantes = 3;
+        joueur.x = 100;
+        joueur.y = 300;
+        joueur.velociteY = 0;
+        jeuLance = false;
+        ennemis.forEach(e => { e.visible = true; });
+        ennemis[0].x = 200;
+        ennemis[1].x = 400;
+        ennemis[2].x = 560;
+        plateformes = [
+            nouvellePlateforme(),
+            nouvellePlateforme(),
+            nouvellePlateforme(),
+            nouvellePlateforme(),
+        ];
+        plateformes.forEach(p => p.tempsRestant = p.vie);
+        afficherPage("menu");
+    }
+});
 
 function lancerJeu() {
     if (jeuLance) return;
