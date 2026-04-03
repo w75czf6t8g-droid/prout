@@ -2,6 +2,7 @@ let jeuLance = false;
 let gameOver = false;
 let delaiProchainRemplacement = 0;
 let tempsDepuisDernierRemplacement = 0;
+let animationId = null;
 const canvas = document.getElementById("jeu");
 const ctx = canvas.getContext("2d");
 
@@ -315,7 +316,7 @@ function boucleJeu(tempsActuel) {
     dernierTemps = tempsActuel;
     mettreAJour(delta);
     dessiner();
-    requestAnimationFrame(boucleJeu);
+    animationId = requestAnimationFrame(boucleJeu);
 }
 canvas.addEventListener("click", (e) => {
     if (!gameOver) return;
@@ -371,7 +372,8 @@ canvas.addEventListener("click", (e) => {
 });
 
 function lancerJeu() {
-    if (jeuLance) return;
+    if (animationId) cancelAnimationFrame(animationId);
+    jeuLance = false;
     jeuLance = true;
     score = 0;
     viesRestantes = 3;
