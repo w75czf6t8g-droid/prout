@@ -1,3 +1,4 @@
+let jeuLance = false;
 const canvas = document.getElementById("jeu");
 const ctx = canvas.getContext("2d");
 
@@ -235,5 +236,14 @@ function boucleJeu(tempsActuel) {
     requestAnimationFrame(boucleJeu);
 }
 
-requestAnimationFrame(boucleJeu);
+function lancerJeu() {
+    if (jeuLance) return;
+    jeuLance = true;
+    score = 0;
+    viesRestantes = 3;
+    joueur.x = 100;
+    joueur.y = 300;
+    joueur.couleur = couleurs[indexCouleur].valeur;
+    requestAnimationFrame(boucleJeu);
+}
 
