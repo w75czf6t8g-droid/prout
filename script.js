@@ -157,7 +157,7 @@ function mettreAJour(delta) {
         if (laveY > laveCible) laveY = Math.max(laveY - laveVitesse * delta * 0.05, laveCible);
     }
 
-    // Augmenter les créatures tous les 5000 points
+    // Augmenter les créatures tous les 1000 points
     const palier = Math.floor(score / 1000);
     if (palier > palierCreatures) {
         palierCreatures = palier;
@@ -253,9 +253,10 @@ function mettreAJour(delta) {
         }
     });
 
-    if (touches["ArrowLeft"]) joueur.x -= joueur.vitesse;
-    if (touches["ArrowRight"]) joueur.x += joueur.vitesse;
-    if (touches["ArrowUp"] && joueur.auSol) joueur.velociteY = -12;
+    const vitesseFrame = joueur.vitesse * (delta / 16);
+    if (touches["ArrowLeft"]) joueur.x -= vitesseFrame;
+    if (touches["ArrowRight"]) joueur.x += vitesseFrame;
+    if (touches["ArrowUp"] && joueur.auSol) joueur.velociteY = -15;
     if (touches["ArrowDown"]) {
         joueur.traversePlateforme = true;
         joueur.auSol = false;
@@ -272,7 +273,7 @@ function mettreAJour(delta) {
         // Animation rotation
         ennemi.angle += delta * 0.002;
 
-        ennemi.x += ennemi.vitesse * ennemi.direction;
+        ennemi.x += ennemi.vitesse * ennemi.direction * (delta / 16);
         if (ennemi.x - ennemi.rayon <= 0 || ennemi.x + ennemi.rayon >= canvas.width) {
             ennemi.direction *= -1;
         }
