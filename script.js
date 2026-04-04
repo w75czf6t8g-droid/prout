@@ -510,7 +510,8 @@ function lancerJeu(modeHardcore = false) {
     joueur.x = 100;
     joueur.y = 300;
     joueur.velociteY = 0;
-    joueur.invincible = false;
+    joueur.invincible = true;
+    setTimeout(() => joueur.invincible = false, 3000);
     joueur.couleur = couleurs[indexCouleur].valeur;
     ennemis = [nouvelEnnemi(), nouvelEnnemi(), nouvelEnnemi()];
     plateformes = [];
