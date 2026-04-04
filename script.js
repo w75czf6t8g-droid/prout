@@ -37,35 +37,30 @@ const sol = {
     couleur: "#228B22"
 };
 
-function nouvellePlateforme(exclure = []) {
-    let tentatives = 0;
-    let p;
-    do {
-        const largeur = Math.random() * 80 + 60;
-        const x = Math.random() * (canvas.width - largeur - 20) + 10;
-        const y = Math.random() * 180 + 80;
-        p = {
-            x, y, largeur,
-            hauteur: 15,
-            couleur: "#8B4513",
-            vie: Math.random() * 5000 + 10000,
-            tempsRestant: 0,
-            opacite: 0,
-            apparition: true
-        };
-        tentatives++;
-        const chevauche = exclure.some(autre =>
-            p.x < autre.x + autre.largeur + 20 &&
-            p.x + p.largeur + 20 > autre.x &&
-            p.y < autre.y + autre.hauteur + 20 &&
-            p.y + p.hauteur + 20 > autre.y
-        );
-        if (!chevauche) break;
-    } while (tentatives < 50);
-    p.tempsRestant = p.vie;
-    return p;
+function creerPlateformes() {
+    const largeur = 180;
+    const hauteur = 15;
+    const colonnes = [120, 340, 560];
+    const lignes = [260, 140];
+    const result = [];
+    for (let row = 0; row < 2; row++) {
+        for (let col = 0; col < 3; col++) {
+            result.push({
+                x: colonnes[col],
+                y: lignes[row],
+                largeur, hauteur,
+                couleur: "#8B4513",
+                opacite: 1,
+                apparition: false,
+                tempsRestant: 999999,
+                vie: 999999
+            });
+        }
+    }
+    return result;
 }
 
+let plateformes = creerPlateformes();
 let plateformes = [];
 for (let i = 0; i < 4; i++) {
     const p = nouvellePlateforme(plateformes);
@@ -128,9 +123,11 @@ function collisionPlateforme(p) {
 }
 
 function nouvelleCibleLave() {
-    // La lave ne monte jamais au dessus de y=260 pour garder de l'espace jouable
-    const min = 300;
-    const max = 420;
+    // La lave monte max juste sous les plateformes du haut (y=140)
+    // Ligne basse des plateformes = y=260, ligne haute = y=140
+    // La lave peut engloutir la ligne basse mais s'arrête sous la ligne haute
+    const min = 155; // Juste sous les plateformes du haut (140 + 15 de hauteur + quelques px)
+    const max = 380;
     return Math.random() * (max - min) + min;
 }
 
@@ -199,26 +196,14 @@ function mettreAJour(delta) {
         if (viesRestantes <= 0) { gameOver = true; return; }
     }
 
-    const DUREE_FONDU = 1000;
-    tempsDepuisDernierRemplacement += delta;
-
-    plateformes.forEach((p, i) => {
-        if (p.apparition) {
-            p.opacite += delta / DUREE_FONDU;
-            if (p.opacite >= 1) { p.opacite = 1; p.apparition = false; }
+    // Collision plateformes fixes
+    plateformes.forEach(p => {
+        if (collisionPlateforme(p)) {
+            joueur.y = p.y - joueur.hauteur;
+            joueur.velociteY = 0;
+            joueur.auSol = true;
         }
-
-        if (p.tempsRestant <= 0) {
-            p.opacite -= delta / DUREE_FONDU;
-            if (p.opacite <= 0) {
-                const autres = plateformes.filter((_, j) => j !== i);
-                plateformes[i] = nouvellePlateforme(autres);
-                tempsDepuisDernierRemplacement = 0;
-                delaiProchainRemplacement = Math.random() * 5000 + 10000;
-            }
-            return;
-        }
-
+    });
         if (
             tempsDepuisDernierRemplacement >= delaiProchainRemplacement &&
             delaiProchainRemplacement > 0 &&
@@ -516,13 +501,7 @@ canvas.addEventListener("click", (e) => {
         joueur.invincible = false;
         jeuLance = false;
         ennemis = [nouvelEnnemi(), nouvelEnnemi(), nouvelEnnemi()];
-        plateformes = [];
-        for (let i = 0; i < 4; i++) {
-            const p = nouvellePlateforme(plateformes);
-            p.opacite = 1;
-            p.apparition = false;
-            plateformes.push(p);
-        }
+        plateformes = creerPlateformes();
         afficherPage("menu");
     }
 });
@@ -547,15 +526,7 @@ function lancerJeu(modeHardcore = false) {
     setTimeout(() => joueur.invincible = false, 3000);
     joueur.couleur = couleurs[indexCouleur].valeur;
     ennemis = [nouvelEnnemi(), nouvelEnnemi(), nouvelEnnemi()];
-    plateformes = [];
-    for (let i = 0; i < 4; i++) {
-        const p = nouvellePlateforme(plateformes);
-        p.opacite = 1;
-        p.apparition = false;
-        plateformes.push(p);
-    }
-    delaiProchainRemplacement = Math.random() * 5000 + 10000;
-    tempsDepuisDernierRemplacement = 0;
+    plateformes = creerPlateformes();
     dernierTemps = performance.now();
     animationId = requestAnimationFrame(boucleJeu);
 }
