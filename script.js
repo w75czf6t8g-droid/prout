@@ -399,8 +399,13 @@ function dessiner() {
     ctx.font = "bold 20px Arial";
     ctx.textAlign = "left";
     ctx.fillText("Score : " + score, 10, 30);
-    ctx.fillText("Vies : " + "❤️".repeat(viesRestantes), 650, 30);
-
+    if (hardcore) {
+        ctx.fillStyle = "#FF0000";
+        ctx.fillText("HARDCORE", 620, 30);
+    } else {
+        ctx.fillStyle = "black";
+        ctx.fillText("Vies : " + "❤️".repeat(viesRestantes), 650, 30);
+    }
     if (laveActive) {
         ctx.fillStyle = "#FF4500";
         ctx.font = "bold 14px Arial";
@@ -489,11 +494,13 @@ canvas.addEventListener("click", (e) => {
     }
 });
 
-function lancerJeu() {
+let hardcore = false;
+function lancerJeu(modeHardcore = false) {
+    hardcore = modeHardcore;
     if (animationId) cancelAnimationFrame(animationId);
     animationId = null;
     score = 0;
-    viesRestantes = 3;
+    viesRestantes = modeHardcore ? 1 : 3;
     gameOver = false;
     palierCreatures = 0;
     laveActive = false;
