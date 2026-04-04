@@ -78,12 +78,13 @@ for (let i = 0; i < 4; i++) {
 function nouvelEnnemi() {
     return {
         x: Math.random() * 700 + 50,
-        y: 330,
+        y: Math.random() * 250 + 50,
         rayon: 18,
         vitesse: 2 + Math.random(),
-        direction: Math.random() > 0.5 ? 1 : -1,
+        vx: (Math.random() - 0.5) * 4,
+        vy: (Math.random() - 0.5) * 4,
         visible: true,
-        angle: 0, // pour animation rotation
+        angle: 0,
         nbPointes: 6
     };
 }
@@ -273,9 +274,36 @@ function mettreAJour(delta) {
         // Animation rotation
         ennemi.angle += delta * 0.002;
 
-        ennemi.x += ennemi.vitesse * ennemi.direction * (delta / 16);
-        if (ennemi.x - ennemi.rayon <= 0 || ennemi.x + ennemi.rayon >= canvas.width) {
-            ennemi.direction *= -1;
+        // Déplacement dans toutes les directions
+        ennemi.x += ennemi.vx * (delta / 16);
+        ennemi.y += ennemi.vy * (delta / 16);
+
+        // Rebond sur les bords gauche/droite
+        if (ennemi.x - ennemi.rayon <= 0) {
+            ennemi.x = ennemi.rayon;
+            ennemi.vx = Math.abs(ennemi.vx);
+        }
+        if (ennemi.x + ennemi.rayon >= canvas.width) {
+            ennemi.x = canvas.width - ennemi.rayon;
+            ennemi.vx = -Math.abs(ennemi.vx);
+        }
+
+        // Rebond sur le bord haut
+        if (ennemi.y - ennemi.rayon <= 0) {
+            ennemi.y = ennemi.rayon;
+            ennemi.vy = Math.abs(ennemi.vy);
+        }
+
+        // Rebond sur le sol
+        if (ennemi.y + ennemi.rayon >= sol.y) {
+            ennemi.y = sol.y - ennemi.rayon;
+            ennemi.vy = -Math.abs(ennemi.vy);
+        }
+
+        // Rebond sur la lave
+        if (laveActive && ennemi.y + ennemi.rayon >= laveY) {
+            ennemi.y = laveY - ennemi.rayon;
+            ennemi.vy = -Math.abs(ennemi.vy) - 1;
         }
 
         if (collisionCercle(joueur, ennemi) && !joueur.invincible) {
