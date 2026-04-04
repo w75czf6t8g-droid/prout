@@ -269,7 +269,10 @@ function mettreAJour(delta) {
     }
     if (joueur.x < 0) joueur.x = 0;
     if (joueur.x + joueur.largeur > canvas.width) joueur.x = canvas.width - joueur.largeur;
-
+    if (joueur.y < 0) {
+        joueur.y = 0;
+        joueur.velociteY = 0;
+    }
     ennemis.forEach(ennemi => {
         if (!ennemi.visible) return;
 
