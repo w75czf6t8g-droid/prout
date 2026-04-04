@@ -80,7 +80,7 @@ function nouvelEnnemi() {
         x: Math.random() * 700 + 50,
         y: 330,
         rayon: 18,
-        vitesse: 1.5 + Math.random(),
+        vitesse: 2 + Math.random(),
         direction: Math.random() > 0.5 ? 1 : -1,
         visible: true,
         angle: 0, // pour animation rotation
