@@ -61,13 +61,6 @@ function creerPlateformes() {
 }
 
 let plateformes = creerPlateformes();
-let plateformes = [];
-for (let i = 0; i < 4; i++) {
-    const p = nouvellePlateforme(plateformes);
-    p.opacite = 1;
-    p.apparition = false;
-    plateformes.push(p);
-}
 
 // Créer un ennemi
 function nouvelEnnemi() {
@@ -196,45 +189,9 @@ function mettreAJour(delta) {
         if (viesRestantes <= 0) { gameOver = true; return; }
     }
 
-    // Collision plateformes fixes
+ // Collision plateformes fixes
     plateformes.forEach(p => {
         if (collisionPlateforme(p)) {
-            joueur.y = p.y - joueur.hauteur;
-            joueur.velociteY = 0;
-            joueur.auSol = true;
-        }
-    });
-        if (
-            tempsDepuisDernierRemplacement >= delaiProchainRemplacement &&
-            delaiProchainRemplacement > 0 &&
-            !plateformes.some(p => p.tempsRestant <= 0)
-        ) {
-            const disponibles = plateformes
-                .map((p, i) => ({ p, i }))
-                .filter(({ p }) => !p.apparition && p.tempsRestant > 0);
-            if (disponibles.length > 0) {
-                const choix = disponibles[Math.floor(Math.random() * disponibles.length)];
-                plateformes[choix.i].tempsRestant = 0;
-            }
-        }
-
-        if (!p.apparition && p.tempsRestant < 5000 && p.tempsRestant > 0) {
-            const progression = 1 - (p.tempsRestant / 5000);
-            if (progression < 0.5) {
-                const t = progression / 0.5;
-                const r = Math.round(139 + (255 - 139) * t);
-                const g = Math.round(69 + (102 - 69) * t);
-                const b = Math.round(19 + (0 - 19) * t);
-                p.couleur = `rgb(${r},${g},${b})`;
-            } else {
-                const t = (progression - 0.5) / 0.5;
-                p.couleur = `rgb(255,${Math.round(102 * (1 - t))},0)`;
-            }
-        } else if (!p.apparition) {
-            p.couleur = "#8B4513";
-        }
-
-        if (p.opacite > 0.5 && collisionPlateforme(p)) {
             joueur.y = p.y - joueur.hauteur;
             joueur.velociteY = 0;
             joueur.auSol = true;
