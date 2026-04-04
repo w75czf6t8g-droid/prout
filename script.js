@@ -22,7 +22,7 @@ const joueur = {
     y: 300,
     largeur: 40,
     hauteur: 40,
-    vitesse: 5,
+    vitesse: 8,
     velociteY: 0,
     auSol: false,
     couleur: "#FF0000",
@@ -80,7 +80,7 @@ function nouvelEnnemi() {
         x: Math.random() * 700 + 50,
         y: 330,
         rayon: 18,
-        vitesse: 1.5 + Math.random(),
+        vitesse: 3 + Math.random() * 2,
         direction: Math.random() > 0.5 ? 1 : -1,
         visible: true,
         angle: 0, // pour animation rotation
