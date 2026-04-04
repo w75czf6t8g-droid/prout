@@ -256,8 +256,12 @@ function mettreAJour(delta) {
     if (touches["ArrowLeft"]) joueur.x -= joueur.vitesse;
     if (touches["ArrowRight"]) joueur.x += joueur.vitesse;
     if (touches["ArrowUp"] && joueur.auSol) joueur.velociteY = -12;
-    if (touches["ArrowDown"]) joueur.traversePlateforme = true;
-    else joueur.traversePlateforme = false;
+    if (touches["ArrowDown"]) {
+        joueur.traversePlateforme = true;
+        if (joueur.auSol) joueur.velociteY = 3; // Petite impulsion vers le bas
+    } else {
+        joueur.traversePlateforme = false;
+    }
     if (joueur.x < 0) joueur.x = 0;
     if (joueur.x + joueur.largeur > canvas.width) joueur.x = canvas.width - joueur.largeur;
 
