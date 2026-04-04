@@ -37,9 +37,9 @@ const sol = {
 };
 
 function creerPlateformes() {
-    const largeur = 180;
-    const hauteur = 15;
-    const colonnes = [120, 340, 560];
+    const largeur = 90;
+    const hauteur = 12;
+    const colonnes = [140, 370, 590];
     const lignes = [260, 140];
     const result = [];
     for (let row = 0; row < 2; row++) {
