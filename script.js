@@ -1,7 +1,5 @@
 let jeuLance = false;
 let gameOver = false;
-let delaiProchainRemplacement = 0;
-let tempsDepuisDernierRemplacement = 0;
 let animationId = null;
 let palierCreatures = 0;
 let laveActive = false;
@@ -26,7 +24,8 @@ const joueur = {
     velociteY: 0,
     auSol: false,
     couleur: "#FF0000",
-    invincible: false
+    invincible: false,
+    traversePlateforme: false
 };
 
 const sol = {
@@ -51,9 +50,7 @@ function creerPlateformes() {
                 largeur, hauteur,
                 couleur: "#8B4513",
                 opacite: 1,
-                apparition: false,
-                tempsRestant: 999999,
-                vie: 999999
+                apparition: false
             });
         }
     }
@@ -62,7 +59,6 @@ function creerPlateformes() {
 
 let plateformes = creerPlateformes();
 
-// Créer un ennemi
 function nouvelEnnemi() {
     return {
         x: Math.random() * 700 + 50,
@@ -73,7 +69,8 @@ function nouvelEnnemi() {
         vy: (Math.random() - 0.5) * 6,
         visible: true,
         angle: 0,
-        nbPointes: 6
+        nbPointes: 6,
+        reapparitionTimer: 0
     };
 }
 
@@ -84,15 +81,6 @@ document.addEventListener("keydown", e => touches[e.key] = true);
 document.addEventListener("keyup", e => touches[e.key] = false);
 
 let dernierTemps = performance.now();
-
-function collision(a, b) {
-    return (
-        a.x < b.x + b.largeur &&
-        a.x + a.largeur > b.x &&
-        a.y < b.y + b.hauteur &&
-        a.y + a.hauteur > b.y
-    );
-}
 
 function collisionCercle(joueur, ennemi) {
     const cx = ennemi.x;
@@ -116,10 +104,7 @@ function collisionPlateforme(p) {
 }
 
 function nouvelleCibleLave() {
-    // La lave monte max juste sous les plateformes du haut (y=140)
-    // Ligne basse des plateformes = y=260, ligne haute = y=140
-    // La lave peut engloutir la ligne basse mais s'arrête sous la ligne haute
-    const min = 155; // Juste sous les plateformes du haut (140 + 15 de hauteur + quelques px)
+    const min = 155;
     const max = 380;
     return Math.random() * (max - min) + min;
 }
@@ -127,7 +112,7 @@ function nouvelleCibleLave() {
 function mettreAJour(delta) {
     if (gameOver) return;
 
-    // Activer la lave à 10000 points
+    // Activer la lave à 2500 points
     if (score >= 2500 && !laveActive) {
         laveActive = true;
         laveY = 420;
@@ -143,7 +128,6 @@ function mettreAJour(delta) {
             tempsChangementLave = 0;
             delaiChangementLave = Math.random() * 3000 + 2000;
         }
-        // Mouvement progressif vers la cible
         if (laveY < laveCible) laveY = Math.min(laveY + laveVitesse * delta * 0.05, laveCible);
         if (laveY > laveCible) laveY = Math.max(laveY - laveVitesse * delta * 0.05, laveCible);
     }
@@ -170,17 +154,25 @@ function mettreAJour(delta) {
         }
     });
 
+    // Gravité
     joueur.velociteY += 0.5;
     joueur.y += joueur.velociteY;
     joueur.auSol = false;
 
+    // Sol
     if (joueur.y + joueur.hauteur >= sol.y && !joueur.traversePlateforme) {
         joueur.y = sol.y - joueur.hauteur;
         joueur.velociteY = 0;
         joueur.auSol = true;
     }
 
-    // Collision avec la lave
+    // Plafond
+    if (joueur.y < 0) {
+        joueur.y = 0;
+        joueur.velociteY = 0;
+    }
+
+    // Collision lave
     if (laveActive && joueur.y + joueur.hauteur >= laveY && !joueur.invincible) {
         viesRestantes--;
         joueur.invincible = true;
@@ -189,7 +181,7 @@ function mettreAJour(delta) {
         if (viesRestantes <= 0) { gameOver = true; return; }
     }
 
- // Collision plateformes fixes
+    // Collision plateformes
     plateformes.forEach(p => {
         if (collisionPlateforme(p)) {
             joueur.y = p.y - joueur.hauteur;
@@ -198,6 +190,7 @@ function mettreAJour(delta) {
         }
     });
 
+    // Déplacement joueur
     const vitesseFrame = joueur.vitesse * (delta / 16);
     if (touches["ArrowLeft"]) joueur.x -= vitesseFrame;
     if (touches["ArrowRight"]) joueur.x += vitesseFrame;
@@ -209,49 +202,23 @@ function mettreAJour(delta) {
     } else {
         joueur.traversePlateforme = false;
     }
+
     if (joueur.x < 0) joueur.x = 0;
     if (joueur.x + joueur.largeur > canvas.width) joueur.x = canvas.width - joueur.largeur;
-    if (joueur.y < 0) {
-        joueur.y = 0;
-        joueur.velociteY = 0;
-    }
+
+    // Ennemis
     ennemis.forEach(ennemi => {
         if (!ennemi.visible) return;
 
-        // Animation rotation
         ennemi.angle += delta * 0.002;
-
-        // Déplacement dans toutes les directions
         ennemi.x += ennemi.vx * (delta / 16);
         ennemi.y += ennemi.vy * (delta / 16);
 
-        // Rebond sur les bords gauche/droite
-        if (ennemi.x - ennemi.rayon <= 0) {
-            ennemi.x = ennemi.rayon;
-            ennemi.vx = Math.abs(ennemi.vx);
-        }
-        if (ennemi.x + ennemi.rayon >= canvas.width) {
-            ennemi.x = canvas.width - ennemi.rayon;
-            ennemi.vx = -Math.abs(ennemi.vx);
-        }
-
-        // Rebond sur le bord haut
-        if (ennemi.y - ennemi.rayon <= 0) {
-            ennemi.y = ennemi.rayon;
-            ennemi.vy = Math.abs(ennemi.vy);
-        }
-
-        // Rebond sur le sol
-        if (ennemi.y + ennemi.rayon >= sol.y) {
-            ennemi.y = sol.y - ennemi.rayon;
-            ennemi.vy = -Math.abs(ennemi.vy);
-        }
-
-        // Rebond sur la lave
-        if (laveActive && ennemi.y + ennemi.rayon >= laveY) {
-            ennemi.y = laveY - ennemi.rayon;
-            ennemi.vy = -Math.abs(ennemi.vy) - 1;
-        }
+        if (ennemi.x - ennemi.rayon <= 0) { ennemi.x = ennemi.rayon; ennemi.vx = Math.abs(ennemi.vx); }
+        if (ennemi.x + ennemi.rayon >= canvas.width) { ennemi.x = canvas.width - ennemi.rayon; ennemi.vx = -Math.abs(ennemi.vx); }
+        if (ennemi.y - ennemi.rayon <= 0) { ennemi.y = ennemi.rayon; ennemi.vy = Math.abs(ennemi.vy); }
+        if (ennemi.y + ennemi.rayon >= sol.y) { ennemi.y = sol.y - ennemi.rayon; ennemi.vy = -Math.abs(ennemi.vy); }
+        if (laveActive && ennemi.y + ennemi.rayon >= laveY) { ennemi.y = laveY - ennemi.rayon; ennemi.vy = -Math.abs(ennemi.vy) - 1; }
 
         if (collisionCercle(joueur, ennemi) && !joueur.invincible) {
             if (joueur.velociteY > 0 && joueur.y + joueur.hauteur < ennemi.y - ennemi.rayon + 15) {
@@ -271,75 +238,56 @@ function mettreAJour(delta) {
     score++;
 }
 
-// Dessiner un ennemi cercle avec pointes
 function dessinerEnnemi(ennemi) {
     const { x, y, rayon, angle, nbPointes } = ennemi;
     const rayonPointe = rayon * 1.6;
-
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(angle);
-
-    // Ombre
     ctx.shadowColor = "#ff000088";
     ctx.shadowBlur = 10;
-
-    // Corps
     ctx.beginPath();
     for (let i = 0; i < nbPointes * 2; i++) {
         const r = i % 2 === 0 ? rayonPointe : rayon * 0.75;
         const a = (i * Math.PI) / nbPointes;
-        i === 0 ? ctx.moveTo(Math.cos(a) * r, Math.sin(a) * r)
-                : ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+        i === 0 ? ctx.moveTo(Math.cos(a) * r, Math.sin(a) * r) : ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
     }
     ctx.closePath();
-
     const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, rayonPointe);
     gradient.addColorStop(0, "#ff6600");
     gradient.addColorStop(1, "#800000");
     ctx.fillStyle = gradient;
     ctx.fill();
-
     ctx.strokeStyle = "#ffaa00";
     ctx.lineWidth = 2;
     ctx.stroke();
-
     ctx.shadowBlur = 0;
-
-    // Yeux
     ctx.fillStyle = "white";
     ctx.beginPath(); ctx.arc(-6, -4, 5, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.arc(6, -4, 5, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = "black";
     ctx.beginPath(); ctx.arc(-6, -3, 2.5, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.arc(6, -3, 2.5, 0, Math.PI * 2); ctx.fill();
-
     ctx.restore();
 }
 
 function dessinerLave() {
     if (!laveActive) return;
-
-    // Vagues de lave
     ctx.fillStyle = "#FF4500";
     ctx.beginPath();
     ctx.moveTo(0, laveY);
     for (let x = 0; x <= canvas.width; x += 20) {
-        const ondulation = Math.sin(x * 0.05 + Date.now() * 0.003) * 6;
-        ctx.lineTo(x, laveY + ondulation);
+        ctx.lineTo(x, laveY + Math.sin(x * 0.05 + Date.now() * 0.003) * 6);
     }
     ctx.lineTo(canvas.width, canvas.height);
     ctx.lineTo(0, canvas.height);
     ctx.closePath();
     ctx.fill();
-
-    // Lueur
     ctx.fillStyle = "#FF6600aa";
     ctx.beginPath();
     ctx.moveTo(0, laveY - 10);
     for (let x = 0; x <= canvas.width; x += 20) {
-        const ondulation = Math.sin(x * 0.05 + Date.now() * 0.003 + 1) * 8;
-        ctx.lineTo(x, laveY - 10 + ondulation);
+        ctx.lineTo(x, laveY - 10 + Math.sin(x * 0.05 + Date.now() * 0.003 + 1) * 8);
     }
     ctx.lineTo(canvas.width, laveY);
     ctx.lineTo(0, laveY);
@@ -355,10 +303,8 @@ function dessiner() {
     ctx.fillRect(sol.x, sol.y, sol.largeur, sol.hauteur);
 
     plateformes.forEach(p => {
-        ctx.globalAlpha = p.opacite;
         ctx.fillStyle = p.couleur;
         ctx.fillRect(p.x, p.y, p.largeur, p.hauteur);
-        ctx.globalAlpha = 1;
     });
 
     dessinerLave();
@@ -390,16 +336,13 @@ function dessiner() {
     if (gameOver) {
         ctx.fillStyle = "rgba(0,0,0,0.65)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-
         ctx.fillStyle = "#FF0000";
         ctx.font = "bold 72px Arial";
         ctx.textAlign = "center";
         ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2 - 60);
-
         ctx.fillStyle = "white";
         ctx.font = "bold 24px Arial";
         ctx.fillText("Score : " + score, canvas.width / 2, canvas.height / 2 - 10);
-
         ctx.fillStyle = "#FF0000";
         ctx.beginPath();
         ctx.roundRect(canvas.width / 2 - 160, canvas.height / 2 + 20, 140, 50, 10);
@@ -407,14 +350,12 @@ function dessiner() {
         ctx.fillStyle = "white";
         ctx.font = "bold 20px Arial";
         ctx.fillText("🔄 Rejouer", canvas.width / 2 - 90, canvas.height / 2 + 52);
-
         ctx.fillStyle = "#444444";
         ctx.beginPath();
         ctx.roundRect(canvas.width / 2 + 20, canvas.height / 2 + 20, 140, 50, 10);
         ctx.fill();
         ctx.fillStyle = "white";
         ctx.fillText("🏠 Menu", canvas.width / 2 + 90, canvas.height / 2 + 52);
-
         ctx.textAlign = "left";
     }
 }
@@ -435,30 +376,15 @@ canvas.addEventListener("click", (e) => {
     const cx = canvas.width / 2;
     const cy = canvas.height / 2;
 
-    // Rejouer
     if (mx >= cx - 160 && mx <= cx - 20 && my >= cy + 20 && my <= cy + 70) {
-        lancerJeu();
+        lancerJeu(hardcore);
     }
 
-    // Menu
     if (mx >= cx + 20 && mx <= cx + 160 && my >= cy + 20 && my <= cy + 70) {
         if (animationId) cancelAnimationFrame(animationId);
         animationId = null;
         gameOver = false;
-        score = 0;
-        viesRestantes = 3;
-        palierCreatures = 0;
-        laveActive = false;
-        laveY = 420;
-        laveCible = 420;
-        tempsChangementLave = 0;
-        joueur.x = 100;
-        joueur.y = 300;
-        joueur.velociteY = 0;
-        joueur.invincible = false;
         jeuLance = false;
-        ennemis = [nouvelEnnemi(), nouvelEnnemi(), nouvelEnnemi()];
-        plateformes = creerPlateformes();
         afficherPage("menu");
     }
 });
@@ -480,6 +406,7 @@ function lancerJeu(modeHardcore = false) {
     joueur.y = 300;
     joueur.velociteY = 0;
     joueur.invincible = true;
+    joueur.traversePlateforme = false;
     setTimeout(() => joueur.invincible = false, 3000);
     joueur.couleur = couleurs[indexCouleur].valeur;
     ennemis = [nouvelEnnemi(), nouvelEnnemi(), nouvelEnnemi()];
