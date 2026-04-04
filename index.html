@@ -228,6 +228,35 @@
         #page-jeu {
             padding: 0;
         }
+        .niveau-btn {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(145deg, #5dde2a, #2d8000);
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 20px;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.4);
+            transition: transform 0.1s;
+        }
+        .niveau-btn:hover { transform: scale(1.1); }
+        .niveau-btn.verrouille {
+            background: linear-gradient(145deg, #444, #222);
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        .niveau-btn.verrouille::after {
+            content: '🔒';
+            position: absolute;
+            font-size: 14px;
+            margin-top: 30px;
+        }
+        .niveau-btn { position: relative; }
     </style>
 </head>
 <body>
@@ -284,7 +313,85 @@
         <div class="nom-couleur" id="nom-fond">Nuit</div>
         <button class="btn-retour" id="btn-retour-fond">↩ RETOUR</button>
     </div>
+    <!-- PAGE MODES -->
+    <div class="page" id="page-modes">
+        <div id="menu-bg2" style="position:absolute;inset:0;z-index:0;"></div>
+        <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:40px;width:100%;">
+            <h2 style="color:#aaff00;font-family:'Press Start 2P',monospace;font-size:20px;text-shadow:2px 2px 0 #3a7000;">CHOISIR UN MODE</h2>
+            <div style="display:flex;gap:50px;align-items:center;justify-content:center;">
 
+                <!-- Niveau -->
+                <div class="gd-btn" id="btn-niveau">
+                    <div class="icone" style="background:linear-gradient(145deg,#f5c842,#c89a00);width:100px;height:100px;font-size:36px;">🗺️</div>
+                    <span class="label" style="font-size:10px;">NIVEAU</span>
+                </div>
+
+                <!-- Survie -->
+                <div class="gd-btn" id="btn-survie">
+                    <div class="icone" style="background:linear-gradient(145deg,#ff4444,#880000);width:100px;height:100px;font-size:36px;">💀</div>
+                    <span class="label" style="font-size:10px;">SURVIE</span>
+                </div>
+
+            </div>
+            <div class="gd-btn" id="btn-retour-modes" style="margin-top:10px;">
+                <div class="icone" style="background:linear-gradient(145deg,#555,#333);width:70px;height:40px;font-size:16px;border-radius:10px;">↩</div>
+                <span class="label" style="font-size:8px;">MENU</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE NIVEAUX -->
+    <div class="page" id="page-niveaux">
+        <div style="position:absolute;inset:0;background:#111;z-index:0;"></div>
+        <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:20px;width:100%;padding:20px;">
+            <h2 style="color:#aaff00;font-family:'Press Start 2P',monospace;font-size:16px;text-shadow:2px 2px 0 #3a7000;">CHOISIR UN NIVEAU</h2>
+            <div style="display:flex;flex-wrap:wrap;gap:15px;justify-content:center;max-width:700px;">
+                <!-- 10 niveaux -->
+                <div class="niveau-btn" data-niveau="1">1</div>
+                <div class="niveau-btn verrouille" data-niveau="2">2</div>
+                <div class="niveau-btn verrouille" data-niveau="3">3</div>
+                <div class="niveau-btn verrouille" data-niveau="4">4</div>
+                <div class="niveau-btn verrouille" data-niveau="5">5</div>
+                <div class="niveau-btn verrouille" data-niveau="6">6</div>
+                <div class="niveau-btn verrouille" data-niveau="7">7</div>
+                <div class="niveau-btn verrouille" data-niveau="8">8</div>
+                <div class="niveau-btn verrouille" data-niveau="9">9</div>
+                <div class="niveau-btn verrouille" data-niveau="10">10</div>
+            </div>
+            <div class="gd-btn" id="btn-retour-niveaux" style="margin-top:10px;">
+                <div class="icone" style="background:linear-gradient(145deg,#555,#333);width:70px;height:40px;font-size:16px;border-radius:10px;">↩</div>
+                <span class="label" style="font-size:8px;">RETOUR</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE SURVIE -->
+    <div class="page" id="page-survie">
+        <div style="position:absolute;inset:0;background:#111;z-index:0;"></div>
+        <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:40px;width:100%;">
+            <h2 style="color:#aaff00;font-family:'Press Start 2P',monospace;font-size:20px;text-shadow:2px 2px 0 #3a7000;">MODE SURVIE</h2>
+            <div style="display:flex;gap:50px;align-items:center;justify-content:center;">
+
+                <!-- Normal -->
+                <div class="gd-btn" id="btn-normal">
+                    <div class="icone" style="background:linear-gradient(145deg,#5dde2a,#2d8000);width:100px;height:100px;font-size:36px;">😊</div>
+                    <span class="label" style="font-size:10px;">NORMAL</span>
+                </div>
+
+                <!-- Hardcore -->
+                <div class="gd-btn" id="btn-hardcore">
+                    <div class="icone" style="background:linear-gradient(145deg,#ff0000,#4a0000);width:100px;height:100px;font-size:36px;">💀</div>
+                    <span class="label" style="font-size:10px;">HARDCORE</span>
+                </div>
+
+            </div>
+            <div class="gd-btn" id="btn-retour-survie">
+                <div class="icone" style="background:linear-gradient(145deg,#555,#333);width:70px;height:40px;font-size:16px;border-radius:10px;">↩</div>
+                <span class="label" style="font-size:8px;">RETOUR</span>
+            </div>
+        </div>
+    </div>
+    
     <!-- JEU -->
     <div class="page" id="page-jeu">
         <canvas id="jeu" width="800" height="400"></canvas>
@@ -364,8 +471,7 @@
         }
 
         document.getElementById("btn-jouer").onclick = () => {
-            afficherPage("page-jeu");
-            lancerJeu();
+            afficherPage("page-modes");
         };
 
         document.getElementById("btn-couleurs").onclick = () => {
@@ -384,6 +490,31 @@
         // Init
         appliquerCouleurJoueur();
         appliquerCouleurFond();
+    // Navigation modes
+        document.getElementById("btn-niveau").onclick = () => afficherPage("page-niveaux");
+        document.getElementById("btn-survie").onclick = () => afficherPage("page-survie");
+        document.getElementById("btn-retour-modes").onclick = () => afficherPage("menu");
+        document.getElementById("btn-retour-niveaux").onclick = () => afficherPage("page-modes");
+        document.getElementById("btn-retour-survie").onclick = () => afficherPage("page-modes");
+
+        // Mode de jeu
+        let modeHardcore = false;
+
+        document.getElementById("btn-normal").onclick = () => {
+            modeHardcore = false;
+            afficherPage("page-jeu");
+            lancerJeu(false);
+        };
+
+        document.getElementById("btn-hardcore").onclick = () => {
+            modeHardcore = true;
+            afficherPage("page-jeu");
+            lancerJeu(true);
+        };
+
+        document.getElementById("btn-niveau").onclick = () => {
+            afficherPage("page-niveaux");
+        };
     </script>
 
     <script src="script.js"></script>
