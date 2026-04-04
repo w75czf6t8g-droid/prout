@@ -449,12 +449,36 @@ canvas.addEventListener("click", (e) => {
     const cx = canvas.width / 2;
     const cy = canvas.height / 2;
 
+    // Rejouer
     if (mx >= cx - 160 && mx <= cx - 20 && my >= cy + 20 && my <= cy + 70) {
         lancerJeu();
     }
+
+    // Menu
     if (mx >= cx + 20 && mx <= cx + 160 && my >= cy + 20 && my <= cy + 70) {
-        lancerJeu();
-        cancelAnimationFrame(animationId);
+        if (animationId) cancelAnimationFrame(animationId);
+        animationId = null;
+        gameOver = false;
+        score = 0;
+        viesRestantes = 3;
+        palierCreatures = 0;
+        laveActive = false;
+        laveY = 420;
+        laveCible = 420;
+        tempsChangementLave = 0;
+        joueur.x = 100;
+        joueur.y = 300;
+        joueur.velociteY = 0;
+        joueur.invincible = false;
+        jeuLance = false;
+        ennemis = [nouvelEnnemi(), nouvelEnnemi(), nouvelEnnemi()];
+        plateformes = [];
+        for (let i = 0; i < 4; i++) {
+            const p = nouvellePlateforme(plateformes);
+            p.opacite = 1;
+            p.apparition = false;
+            plateformes.push(p);
+        }
         afficherPage("menu");
     }
 });
