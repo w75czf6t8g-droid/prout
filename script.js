@@ -81,8 +81,8 @@ function nouvelEnnemi() {
         y: Math.random() * 250 + 50,
         rayon: 18,
         vitesse: 2 + Math.random(),
-        vx: (Math.random() - 0.5) * 4,
-        vy: (Math.random() - 0.5) * 4,
+        vx: (Math.random() - 0.5) * 6,
+        vy: (Math.random() - 0.5) * 6,
         visible: true,
         angle: 0,
         nbPointes: 6
@@ -172,7 +172,9 @@ function mettreAJour(delta) {
             if (e.reapparitionTimer > 3000) {
                 e.visible = true;
                 e.x = Math.random() * 700 + 50;
-                e.y = 330;
+                e.y = Math.random() * 250 + 50;
+                e.vx = (Math.random() - 0.5) * 6;
+                e.vy = (Math.random() - 0.5) * 6;
                 e.reapparitionTimer = 0;
             }
         }
