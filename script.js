@@ -136,7 +136,7 @@ function mettreAJour(delta) {
     if (gameOver) return;
 
     // Activer la lave à 10000 points
-    if (score >= 10000 && !laveActive) {
+    if (score >= 2500 && !laveActive) {
         laveActive = true;
         laveY = 420;
         laveCible = nouvelleCibleLave();
@@ -157,7 +157,7 @@ function mettreAJour(delta) {
     }
 
     // Augmenter les créatures tous les 5000 points
-    const palier = Math.floor(score / 5000);
+    const palier = Math.floor(score / 1000);
     if (palier > palierCreatures) {
         palierCreatures = palier;
         ennemis.push(nouvelEnnemi());
