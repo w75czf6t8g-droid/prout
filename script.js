@@ -115,9 +115,9 @@ function collisionCercle(joueur, ennemi) {
 }
 
 function collisionPlateforme(p) {
+    if (joueur.traversePlateforme) return false;
     return (
         p.opacite > 0.3 &&
-        !joueur.traversePlateforme &&
         joueur.x < p.x + p.largeur &&
         joueur.x + joueur.largeur > p.x &&
         joueur.y + joueur.hauteur >= p.y &&
@@ -181,7 +181,7 @@ function mettreAJour(delta) {
     joueur.y += joueur.velociteY;
     joueur.auSol = false;
 
-    if (joueur.y + joueur.hauteur >= sol.y) {
+    if (joueur.y + joueur.hauteur >= sol.y && !joueur.traversePlateforme) {
         joueur.y = sol.y - joueur.hauteur;
         joueur.velociteY = 0;
         joueur.auSol = true;
@@ -258,7 +258,8 @@ function mettreAJour(delta) {
     if (touches["ArrowUp"] && joueur.auSol) joueur.velociteY = -12;
     if (touches["ArrowDown"]) {
         joueur.traversePlateforme = true;
-        if (joueur.auSol) joueur.velociteY = 3; // Petite impulsion vers le bas
+        joueur.auSol = false;
+        joueur.velociteY = 5;
     } else {
         joueur.traversePlateforme = false;
     }
