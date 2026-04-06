@@ -520,10 +520,10 @@
         document.getElementById("btn-niveau").onclick = () => afficherPage("page-classique");
         document.getElementById("btn-survie").onclick = () => afficherPage("page-survie");
         document.getElementById("btn-retour-modes").onclick = () => afficherPage("menu");
-        document.getElementById("btn-retour-niveaux").onclick = () => afficherPage("page-modes");
+        document.getElementById("btn-retour-niveaux").onclick = () => afficherPage("page-classique");
         document.getElementById("btn-retour-survie").onclick = () => afficherPage("page-modes");
+        document.getElementById("btn-retour-classique").onclick = () => afficherPage("page-modes");
 
-        // Mode de jeu
         let modeHardcore = false;
 
         document.getElementById("btn-normal").onclick = () => {
@@ -538,16 +538,12 @@
             lancerJeu(true);
         };
 
-        document.getElementById("btn-niveau").onclick = () => {
-            afficherPage("page-niveaux");
-        };
-
         document.getElementById("btn-classique-niveau").onclick = () => afficherPage("page-niveaux");
+
         document.getElementById("btn-libre").onclick = () => {
             afficherPage("page-jeu");
             lancerJeu(false);
         };
-        document.getElementById("btn-retour-classique").onclick = () => afficherPage("page-modes");
     </script>
 
     <script src="script.js"></script>
