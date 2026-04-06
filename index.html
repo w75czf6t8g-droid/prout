@@ -320,10 +320,10 @@
             <h2 style="color:#aaff00;font-family:'Press Start 2P',monospace;font-size:20px;text-shadow:2px 2px 0 #3a7000;">CHOISIR UN MODE</h2>
             <div style="display:flex;gap:50px;align-items:center;justify-content:center;">
 
-                <!-- Niveau -->
+                <!-- Classique -->
                 <div class="gd-btn" id="btn-niveau">
-                    <div class="icone" style="background:linear-gradient(145deg,#f5c842,#c89a00);width:100px;height:100px;font-size:36px;">🗺️</div>
-                    <span class="label" style="font-size:10px;">NIVEAU</span>
+                    <div class="icone" style="background:linear-gradient(145deg,#f5c842,#c89a00);width:100px;height:100px;font-size:36px;">⭐</div>
+                    <span class="label" style="font-size:10px;">CLASSIQUE</span>
                 </div>
 
                 <!-- Survie -->
@@ -340,6 +340,32 @@
         </div>
     </div>
 
+    <!-- PAGE CLASSIQUE -->
+    <div class="page" id="page-classique">
+        <div style="position:absolute;inset:0;background:#111;z-index:0;"></div>
+        <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:40px;width:100%;">
+            <h2 style="color:#aaff00;font-family:'Press Start 2P',monospace;font-size:20px;text-shadow:2px 2px 0 #3a7000;">MODE CLASSIQUE</h2>
+            <div style="display:flex;gap:50px;align-items:center;justify-content:center;">
+
+                <!-- Niveau -->
+                <div class="gd-btn" id="btn-classique-niveau">
+                    <div class="icone" style="background:linear-gradient(145deg,#f5c842,#c89a00);width:100px;height:100px;font-size:36px;">🗺️</div>
+                    <span class="label" style="font-size:10px;">NIVEAU</span>
+                </div>
+
+                <!-- Mode libre -->
+                <div class="gd-btn" id="btn-libre">
+                    <div class="icone" style="background:linear-gradient(145deg,#5b8fff,#1a3ab8);width:100px;height:100px;font-size:36px;">🎮</div>
+                    <span class="label" style="font-size:10px;">MODE LIBRE</span>
+                </div>
+
+            </div>
+            <div class="gd-btn" id="btn-retour-classique">
+                <div class="icone" style="background:linear-gradient(145deg,#555,#333);width:70px;height:40px;font-size:16px;border-radius:10px;">↩</div>
+                <span class="label" style="font-size:8px;">RETOUR</span>
+            </div>
+        </div>
+    </div>
     <!-- PAGE NIVEAUX -->
     <div class="page" id="page-niveaux">
         <div style="position:absolute;inset:0;background:#111;z-index:0;"></div>
@@ -491,7 +517,7 @@
         appliquerCouleurJoueur();
         appliquerCouleurFond();
     // Navigation modes
-        document.getElementById("btn-niveau").onclick = () => afficherPage("page-niveaux");
+        document.getElementById("btn-niveau").onclick = () => afficherPage("page-classique");
         document.getElementById("btn-survie").onclick = () => afficherPage("page-survie");
         document.getElementById("btn-retour-modes").onclick = () => afficherPage("menu");
         document.getElementById("btn-retour-niveaux").onclick = () => afficherPage("page-modes");
@@ -515,6 +541,13 @@
         document.getElementById("btn-niveau").onclick = () => {
             afficherPage("page-niveaux");
         };
+
+        document.getElementById("btn-classique-niveau").onclick = () => afficherPage("page-niveaux");
+        document.getElementById("btn-libre").onclick = () => {
+            afficherPage("page-jeu");
+            lancerJeu(false);
+        };
+        document.getElementById("btn-retour-classique").onclick = () => afficherPage("page-modes");
     </script>
 
     <script src="script.js"></script>
